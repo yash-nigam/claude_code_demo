@@ -1,2 +1,3 @@
 - [Missing async keyword demo bug](missing-async-keyword-demo-bug.md) — authService.js pattern: `await` used without `async`; check other service files for the same planted-bug shape.
 - [Unbounded refresh token store](unbounded-refresh-token-store.md) — authService.js refreshTokenStore Map has no TTL sweep/size cap; flag as High perf debt, not just a demo simplification.
+- [Sync stdio in global request logger](sync-stdio-in-global-request-logger.md) — logger.js does sync process.stdout/stderr writes on every request via global requestLogger; worse on Windows.

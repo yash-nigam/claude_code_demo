@@ -337,6 +337,24 @@ describe('validateDateOfBirth', () => {
     expect(validateDateOfBirth('2023-02-30')).toBe(false);
   });
 
+  test('accepts February 29 in a leap year', () => {
+    expect(validateDateOfBirth('2024-02-29')).toBe(true);
+  });
+
+  test('rejects February 29 in a non-leap year', () => {
+    expect(validateDateOfBirth('2023-02-29')).toBe(false);
+  });
+
+  test('rejects a month value out of range', () => {
+    expect(validateDateOfBirth('1990-13-01')).toBe(false);
+    expect(validateDateOfBirth('1990-00-01')).toBe(false);
+  });
+
+  test('rejects a day value out of range', () => {
+    expect(validateDateOfBirth('1990-01-32')).toBe(false);
+    expect(validateDateOfBirth('1990-01-00')).toBe(false);
+  });
+
   test('rejects a malformed date string', () => {
     expect(validateDateOfBirth('06/15/1990')).toBe(false);
     expect(validateDateOfBirth('1990-6-15')).toBe(false);

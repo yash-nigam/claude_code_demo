@@ -1,1 +1,2 @@
-- [Auth truthiness & type-confusion bugs](unawaited-promise-auth-bypass.md) — unawaited bcrypt, inverted expiry, JWT helper fed a UUID; file won't parse.
+- [Auth truthiness, type-confusion & unbound token ops](unawaited-promise-auth-bypass.md) — unawaited bcrypt, inverted expiry, UUID in a JWT helper, revoke with no owner check; file won't parse. Has a do-not-re-flag list.
+- [Validators are never wired in](validators-exist-but-are-never-wired-in.md) — grep call sites first; only email/password are used, and validateEmail trims what callers don't.

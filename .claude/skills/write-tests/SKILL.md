@@ -19,8 +19,10 @@ Node.js application.
 - **Framework**: Jest with Supertest for HTTP integration tests
 - **Test location**: `tests/` mirroring `src/` structure, `.test.js` suffix
 - **Logger**: Structured JSON — never assert on `console` output
-- **Auth**: `JWT_SECRET` defaults to `'dev-secret-key'` in tests — do not
-  assert real security guarantees against this value
+- **Auth**: `JWT_SECRET` is set for tests by `tests/setupEnv.js` (Jest
+  `setupFiles`), not defaulted in application code — read
+  `process.env.JWT_SECRET` when signing tokens in tests, don't hardcode a
+  value, and don't assert real security guarantees against it
 - **Test data**: Define inline for simple cases; use `tests/fixtures/` for
   objects reused across 3+ tests
 

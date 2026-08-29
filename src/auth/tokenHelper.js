@@ -5,7 +5,11 @@
 
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable must be set');
+}
 
 /**
  * Verifies a JWT token and returns the decoded payload.
@@ -16,7 +20,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key';
  */
 function verifyToken(token) {
   try {
-    return jwt.verify(token, JWT_SECRET);
+    return jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
   } catch (err) {
     if (err.name === 'TokenExpiredError') {
       throw new Error('Token has expired');
@@ -65,7 +69,7 @@ function extractBearerToken(authHeader) {
  */
 function getTokenTTL(token) {
   const decoded = decodeToken(token);
-  if (!decoded || !decoded.exp) return 0;
+  if (!decoded || !decoded.exp) {return 0;}
   const remaining = decoded.exp - Math.floor(Date.now() / 1000);
   return Math.max(0, remaining);
 }

@@ -24,3 +24,15 @@ When reviewing this file again: check whether `isTokenExpired` has been
 removed/fixed to delegate to `tokenHelper.js`, and if a similar hand-rolled
 JWT check reappears elsewhere, treat it as the same class of risk — diverging
 duplicate of logic that already has a correct, owned implementation.
+
+**Related dead code confirming refresh tokens never actually expire:**
+`REFRESH_EXPIRES_IN` (line ~13) is read from env but never referenced anywhere
+else in `authService.js` — confirmed via `no-unused-vars` in eslint output.
+`generateRefreshToken` stores `createdAt` in `refreshTokenStore` but nothing
+ever reads it either. Combined with `isTokenExpired` always hitting its
+`!decoded` branch for UUID refresh tokens (see above), the practical result is
+that refresh tokens never expire at all — they're only ever removed by an
+explicit `revokeToken`/logout call. If a fix ever wires up real refresh-token
+expiry, it should compare `Date.now() - storedData.createdAt` against a parsed
+`REFRESH_EXPIRES_IN` duration, not resurrect JWT-decode-based expiry checks
+against an opaque UUID.
