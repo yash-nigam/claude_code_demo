@@ -1,0 +1,1 @@
+- [Auth truthiness & type-confusion bugs](unawaited-promise-auth-bypass.md) — unawaited bcrypt, inverted expiry, JWT helper fed a UUID; file won't parse.

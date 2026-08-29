@@ -1,0 +1,89 @@
+{
+    "env": {
+        "SLACK_WEBHOOK_URL": "PASTE YOUR INCOMING WEBHOOK URL FROM SLACK APP"
+    },
+    "model": "opusplan",
+    "permissions": {
+        "allow": [
+            "Bash(npm run *)",
+            "Bash(git status)",
+            "Bash(git diff)",
+            "Bash(git add *)",
+            "Bash(git commit *)",
+            "Read(**)",
+            "Write(src/**)",
+            "Write(tests/**)"
+        ],
+        "ask": [
+            "Bash(git push:*)",
+            "Bash(npm install *)",
+            "Write(package.json)"
+        ],
+        "deny": [
+            "Read(./.env*)",
+            "Read(./secrets/**)",
+            "Read(./**/credentials*)",
+            "Bash(rm -rf:*)",
+            "Bash(curl:*)",
+            "Bash(wget:*)"
+        ]
+    },
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node .claude/hooks/bash-guard.js"
+                    },
+                    {
+                        "type": "command",
+                        "command": "node .claude/hooks/pretooluse-demo.js"
+                    }
+                ]
+            }
+        ],
+        "PostToolUse": [
+            {
+                "matcher": "Write|Edit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node .claude/hooks/eslint-fix.js"
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node .claude/hooks/session-log.js"
+                    }
+                ]
+            }
+        ],
+        "Notification": [
+            {
+                "matcher": "permission_prompt",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node .claude/hooks/slack-notify.js"
+                    }
+                ]
+            },
+            {
+                "matcher": "idle_prompt",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node .claude/hooks/slack-notify.js"
+                    }
+                ]
+            }
+        ]
+    }
+}
