@@ -1,2 +1,3 @@
 - [Auth truthiness, type-confusion & unbound token ops](unawaited-promise-auth-bypass.md) — unawaited bcrypt, inverted expiry, UUID in a JWT helper, revoke with no owner check; file won't parse. Has a do-not-re-flag list.
+- [JWT_SECRET fails closed, but nothing provisions it](jwt-secret-provisioning-and-test-env.md) — no dotenv anywhere, no entropy floor, setupEnv honours an ambient secret. Hardcoded-fallback finding is already fixed.
 - [Validators are never wired in](validators-exist-but-are-never-wired-in.md) — grep call sites first; only email/password are used, and validateEmail trims what callers don't.
