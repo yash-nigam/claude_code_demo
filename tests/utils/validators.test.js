@@ -4,7 +4,8 @@ const {
   validatePhoneNumber,
   validateUUID,
   sanitizeString,
-  validateCreditCard
+  validateCreditCard,
+  validateDateOfBirth
 } = require('../../src/utils/validators');
 
 describe('validatePhoneNumber', () => {
@@ -304,5 +305,69 @@ describe('validateCreditCard', () => {
     expect(validateCreditCard(undefined)).toBe(false);
     expect(validateCreditCard({})).toBe(false);
     expect(validateCreditCard([])).toBe(false);
+  });
+});
+
+describe('validateDateOfBirth', () => {
+  test('accepts a valid past date', () => {
+    expect(validateDateOfBirth('1990-06-15')).toBe(true);
+  });
+
+  test('accepts today\'s date', () => {
+    const today = new Date().toISOString().slice(0, 10);
+    expect(validateDateOfBirth(today)).toBe(true);
+  });
+
+  test('accepts a date exactly 120 years ago', () => {
+    const year = new Date().getFullYear() - 120;
+    expect(validateDateOfBirth(`${year}-01-01`)).toBe(true);
+  });
+
+  test('rejects a date in the future', () => {
+    const nextYear = new Date().getFullYear() + 1;
+    expect(validateDateOfBirth(`${nextYear}-01-01`)).toBe(false);
+  });
+
+  test('rejects a date more than 120 years ago', () => {
+    const year = new Date().getFullYear() - 121;
+    expect(validateDateOfBirth(`${year}-01-01`)).toBe(false);
+  });
+
+  test('rejects a calendar date that does not exist', () => {
+    expect(validateDateOfBirth('2023-02-30')).toBe(false);
+  });
+
+  test('accepts February 29 in a leap year', () => {
+    expect(validateDateOfBirth('2024-02-29')).toBe(true);
+  });
+
+  test('rejects February 29 in a non-leap year', () => {
+    expect(validateDateOfBirth('2023-02-29')).toBe(false);
+  });
+
+  test('rejects a month value out of range', () => {
+    expect(validateDateOfBirth('1990-13-01')).toBe(false);
+    expect(validateDateOfBirth('1990-00-01')).toBe(false);
+  });
+
+  test('rejects a day value out of range', () => {
+    expect(validateDateOfBirth('1990-01-32')).toBe(false);
+    expect(validateDateOfBirth('1990-01-00')).toBe(false);
+  });
+
+  test('rejects a malformed date string', () => {
+    expect(validateDateOfBirth('06/15/1990')).toBe(false);
+    expect(validateDateOfBirth('1990-6-15')).toBe(false);
+    expect(validateDateOfBirth('not-a-date')).toBe(false);
+    expect(validateDateOfBirth('')).toBe(false);
+  });
+
+  test('rejects non-string input', () => {
+    expect(validateDateOfBirth(631152000000)).toBe(false);
+    expect(validateDateOfBirth(new Date('1990-06-15'))).toBe(false);
+    expect(validateDateOfBirth(null)).toBe(false);
+    expect(validateDateOfBirth(undefined)).toBe(false);
+    expect(validateDateOfBirth({})).toBe(false);
+    expect(validateDateOfBirth([])).toBe(false);
   });
 });

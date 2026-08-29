@@ -19,6 +19,20 @@ file's lint issues, copy the file to the scratchpad, apply the minimal fix
 just to lint it. This surfaced `no-unused-vars`, `require-await`, and `curly`
 violations in `src/auth/authService.js` that were otherwise invisible.
 
+**Concrete planted-bug locations found so far in `src/auth/authService.js`:**
+- `refreshToken(refreshToken)` (~line 80) is declared as a plain `function`, not
+  `async`, but its body does `await getUserById(...)` — this is a hard parse
+  error (`await is only valid in async function`), not just a style nit. Also
+  note the parameter is named `refreshToken`, shadowing the outer function of
+  the same name — rename before/while fixing the missing `async`.
+- `loginUser` (~line 32) calls `bcrypt.compare(password, userRecord.passwordHash)`
+  without `await`. `bcrypt.compare` returns a Promise when no callback is
+  passed, so `isPasswordValid` is always a truthy Promise object — the password
+  check never actually fails, regardless of the password given. This is a
+  second, independent instance of the "missing await" planted-bug category
+  (distinct from the `refreshToken` parse error above) — check both spots
+  separately, fixing one does not imply the other was fixed.
+
 **Codebase-specific gotcha — token type mismatch:** `authService.js`'s
 `generateRefreshToken` produces an opaque `uuidv4()` string, not a JWT
 (architecture doc in CLAUDE.md confirms: refresh tokens are "opaque UUID"

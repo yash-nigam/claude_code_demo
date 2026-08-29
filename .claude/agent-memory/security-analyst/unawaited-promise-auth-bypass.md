@@ -1,6 +1,6 @@
 ---
 name: unawaited-promise-auth-bypass
-description: Auth-path bugs in this repo cluster as truthiness/type-confusion errors (unawaited bcrypt.compare, inverted expiry comparison, JWT expiry helper applied to an opaque UUID); authService.js also has a hard SyntaxError so it cannot be required at runtime
+description: Auth-path bugs in this repo cluster as truthiness/type-confusion errors (unawaited bcrypt.compare, inverted expiry comparison, JWT expiry helper applied to an opaque UUID) plus unbound token ops (revokeToken/refreshToken take no caller identity); authService.js also has a hard SyntaxError so it cannot be required at runtime
 metadata:
   type: feedback
 ---
@@ -43,10 +43,61 @@ rather than the function body. Also verify every declared token-lifetime constan
 consumed somewhere.
 
 **Runtime verification caveat:** `src/auth/authService.js` currently has `await` inside the
-non-async `function refreshToken()` (~line 92), which is a parse-time SyntaxError. The module
-cannot be `require()`d, so dynamic testing, `npm test`, and coverage all fail on it. To
-reproduce findings at runtime, copy the file to the scratchpad and add the missing `async`
-first — do not conclude the code is unreachable or unused just because it will not load.
+non-async `function refreshToken()` (line 85 decl / line 97 `await`), a parse-time SyntaxError.
+Confirm with `node --check src/auth/authService.js`. The module cannot be `require()`d, so
+dynamic testing of it is impossible. To reproduce findings at runtime, copy the file to the
+scratchpad and add the missing `async` first — do not conclude the code is unreachable or
+unused just because it will not load.
+
+**Correction (2026-08-29, PR #1 review): `npm test` does NOT fail on this SyntaxError.**
+Earlier version of this note was wrong. The full suite passes green (112 tests / 3 suites:
+`tests/api/middleware.test.js`, `tests/auth/tokenHelper.test.js`, `tests/utils/validators.test.js`)
+because **no test file requires `authService.js` at all**. `middleware.test.js` only pulls in
+`tokenHelper.js`. Consequences: a green CI run says nothing about whether the app can even
+boot, and `scripts/deploy.sh` gates deployment on `npm test`, so that gate would not catch it
+either. Never use "tests pass" as evidence that an auth module loads.
 
 Note: root `CLAUDE.md` says planted bugs are intentional for a demo. Still report them as
 findings; the demo framing is not a reason to downgrade severity.
+
+**Re-confirmed unchanged 2026-08-29** (branch `feature-validate-birth-date`). All four items
+above are still present at the same lines: `bcrypt.compare` unawaited (`authService.js:32`),
+inverted `decoded.exp > now` (`:68`), `REFRESH_EXPIRES_IN` still unreferenced (`:13`),
+`await` in non-async `function refreshToken` (`:80`/`:92`). They are not being fixed between
+audits — lead with them, don't re-derive them from scratch.
+
+**Second failure mode in this file: unbound token operations (found 2026-08-29).**
+`revokeToken(token)` and `refreshToken(token)` take *only* a token — no `userId`, no caller
+identity. Reading `authService.js` alone this looks fine; the bug is only visible from
+`routes.js`. `POST /logout` is behind `authenticate` but then passes `req.body.refreshToken`
+straight to `revokeToken` with **no check that the token belongs to `req.user`** — so any
+user with any valid access token can terminate any other user's session by guessing/replaying
+a refresh UUID. Same shape on refresh: `getUserById` is a stub that echoes back whatever
+`userId` it is given, so the refresh path never re-validates that the user still exists or is
+still enabled.
+
+**How to apply:** for every function in `authService.js` that accepts a bare token, check the
+route that calls it and ask "whose token is this, and who is allowed to act on it?" The
+ownership check does not exist anywhere in the request path.
+
+**Already triaged — do not re-flag as findings:**
+- *Log injection / CRLF forging via `logger.warn(\`... ${email}\`)`*: not exploitable.
+  `src/utils/logger.js` builds an object and runs it through `JSON.stringify`, which escapes
+  newlines and control characters. The interpolation looks unsafe on a skim but the sink is
+  safe. (PII-in-logs is still a legitimate separate finding; log *injection* is not.)
+- *Algorithm confusion / `none` on `jwt.verify` without an `algorithms` whitelist*:
+  **FIXED on branch `feature-validate-birth-date` (PR #1)** — `tokenHelper.js:23` now pins
+  `{ algorithms: ['HS256'] }`. Runtime-verified that a `none`-signed `role:'admin'` token is
+  rejected. Do not re-flag. Same PR removed the `'dev-secret-key'` fallback from both
+  `tokenHelper.js` and `authService.js`; see [[jwt-secret-provisioning-and-test-env]].
+- *`node_modules/` is absent from the repo* — **no longer true as of 2026-08-29**: it is
+  installed (347 entries), so `npx jest` and `node -e` runtime verification both work. Prefer
+  actually executing the code over reasoning about it. `npm audit` also works (it resolves
+  from `package-lock.json` alone). Beware: `ls node_modules | head -3 && echo PRESENT`
+  reports PRESENT even when the dir is missing (pipeline exit status comes from `head`).
+- *`uuid` moderate advisory GHSA-w5hq-g745-h8pq* (`<11.1.1`, resolved 9.0.1) — the only
+  `npm audit` hit as of 2026-08-29. Not exploitable here: the bug is a missing bounds check
+  on the optional `buf` argument of v3/v5/v6, and this repo only calls `uuidv4()` with no
+  args. Report as informational hygiene, not a real finding.
+- Everything else in the lockfile is on a current patched version (express 4.22.2,
+  jsonwebtoken 9.0.3, body-parser 1.20.6, qs 6.15.3, path-to-regexp 0.1.13).

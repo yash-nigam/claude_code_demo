@@ -82,11 +82,36 @@ function validateCreditCard(cardNumber) {
   );
 }
 
+/**
+ * Validates a date of birth given as an ISO "YYYY-MM-DD" string: it must be
+ * a real calendar date, not in the future, and no more than 120 years ago.
+ *
+ * @param {string} dob
+ * @returns {boolean}
+ */
+function validateDateOfBirth(dob) {
+  return (
+    typeof dob === 'string' &&
+    /^\d{4}-\d{2}-\d{2}$/.test(dob) &&
+    (() => {
+      const date = new Date(dob);
+      const now = new Date();
+      return (
+        !Number.isNaN(date.getTime()) &&
+        date.toISOString().slice(0, 10) === dob &&
+        date <= now &&
+        now.getFullYear() - date.getFullYear() <= 120
+      );
+    })()
+  );
+}
+
 module.exports = {
   validateEmail,
   validatePassword,
   validatePhoneNumber,
   validateUUID,
   sanitizeString,
-  validateCreditCard
+  validateCreditCard,
+  validateDateOfBirth
 };
