@@ -43,10 +43,19 @@ rather than the function body. Also verify every declared token-lifetime constan
 consumed somewhere.
 
 **Runtime verification caveat:** `src/auth/authService.js` currently has `await` inside the
-non-async `function refreshToken()` (~line 92), which is a parse-time SyntaxError. The module
-cannot be `require()`d, so dynamic testing, `npm test`, and coverage all fail on it. To
-reproduce findings at runtime, copy the file to the scratchpad and add the missing `async`
-first — do not conclude the code is unreachable or unused just because it will not load.
+non-async `function refreshToken()` (line 85 decl / line 97 `await`), a parse-time SyntaxError.
+Confirm with `node --check src/auth/authService.js`. The module cannot be `require()`d, so
+dynamic testing of it is impossible. To reproduce findings at runtime, copy the file to the
+scratchpad and add the missing `async` first — do not conclude the code is unreachable or
+unused just because it will not load.
+
+**Correction (2026-08-29, PR #1 review): `npm test` does NOT fail on this SyntaxError.**
+Earlier version of this note was wrong. The full suite passes green (112 tests / 3 suites:
+`tests/api/middleware.test.js`, `tests/auth/tokenHelper.test.js`, `tests/utils/validators.test.js`)
+because **no test file requires `authService.js` at all**. `middleware.test.js` only pulls in
+`tokenHelper.js`. Consequences: a green CI run says nothing about whether the app can even
+boot, and `scripts/deploy.sh` gates deployment on `npm test`, so that gate would not catch it
+either. Never use "tests pass" as evidence that an auth module loads.
 
 Note: root `CLAUDE.md` says planted bugs are intentional for a demo. Still report them as
 findings; the demo framing is not a reason to downgrade severity.
@@ -76,13 +85,15 @@ ownership check does not exist anywhere in the request path.
   `src/utils/logger.js` builds an object and runs it through `JSON.stringify`, which escapes
   newlines and control characters. The interpolation looks unsafe on a skim but the sink is
   safe. (PII-in-logs is still a legitimate separate finding; log *injection* is not.)
-- *Algorithm confusion / `none` on `jwt.verify` without an `algorithms` whitelist*
-  (`tokenHelper.js:19`): jsonwebtoken is pinned to 9.0.3 in `package-lock.json`, which rejects
-  `none` and restricts to HMAC when the key is a string. Report as defence-in-depth/Low, not High.
-- *`node_modules/` is absent from the repo*, so nothing can be `require()`d and no runtime
-  verification is possible without an install (which root `CLAUDE.md` forbids without asking).
-  **Correction (2026-08-29): `npm audit` DOES work in-session** — it resolves purely from
-  `package-lock.json`. Don't skip it. Beware: `ls node_modules | head -3 && echo PRESENT`
+- *Algorithm confusion / `none` on `jwt.verify` without an `algorithms` whitelist*:
+  **FIXED on branch `feature-validate-birth-date` (PR #1)** — `tokenHelper.js:23` now pins
+  `{ algorithms: ['HS256'] }`. Runtime-verified that a `none`-signed `role:'admin'` token is
+  rejected. Do not re-flag. Same PR removed the `'dev-secret-key'` fallback from both
+  `tokenHelper.js` and `authService.js`; see [[jwt-secret-provisioning-and-test-env]].
+- *`node_modules/` is absent from the repo* — **no longer true as of 2026-08-29**: it is
+  installed (347 entries), so `npx jest` and `node -e` runtime verification both work. Prefer
+  actually executing the code over reasoning about it. `npm audit` also works (it resolves
+  from `package-lock.json` alone). Beware: `ls node_modules | head -3 && echo PRESENT`
   reports PRESENT even when the dir is missing (pipeline exit status comes from `head`).
 - *`uuid` moderate advisory GHSA-w5hq-g745-h8pq* (`<11.1.1`, resolved 9.0.1) — the only
   `npm audit` hit as of 2026-08-29. Not exploitable here: the bug is a missing bounds check
