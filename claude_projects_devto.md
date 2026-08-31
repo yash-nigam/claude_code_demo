@@ -12,19 +12,33 @@ I recently went through a hands-on training on **Claude Code** and the broader C
 ## Table of Contents
 
 1. [The Claude Ecosystem](#1-the-claude-ecosystem)
+   - *AI-Code-Design-Cowork-Security-Chrome-Office*
 2. [The Agentic Loop (Query Engine)](#2-the-agentic-loop-query-engine)
+   - *Architecture*
 3. [Models, Effort, and Slash Commands](#3-models-effort-and-slash-commands)
+   - *Models-Commands*
 4. [Session Management](#4-session-management)
+   - *Export-Fork-Resume-Compact*
 5. [Project Configuration](#5-project-configuration)
+   - *ClaudeFolder-Permissions-Init-ClaudeMd*
 6. [Auto Mode vs. Plan Mode](#6-auto-mode-vs-plan-mode)
+   - *Auto-Plan*
 7. [Commands vs. Skills vs. Agents](#7-commands-vs-skills-vs-agents)
+   - *Standup-Metaprompting-PR-Invocation*
 8. [Code Review via Subagents](#8-code-review-via-subagents)
+   - *Security-Performance-Coverage-Quality-Usage-Deploy-Setup-Execution-Tests-Stack-Creation-Example-Focus-OWASP-Memory-Output-Background*
 9. [Multi-Agent Harness Concepts](#9-multi-agent-harness-concepts)
+   - *SecondPass-Comparison*
 10. [Hooks](#10-hooks)
+    - *Flow-PreToolUse-Types-Blocking-Slack-Sharing*
 11. [MCP (Model Context Protocol)](#11-mcp-model-context-protocol)
+    - *Concept-Rationale-Types*
 12. [End-to-End Automation](#12-end-to-end-automation)
+    - *End-to-end automation of security review → issue creation → issue fix → PR creation → PR fix, all through agents.*
 13. [Agent Teams](#13-agent-teams)
+    - *Multiple agents (security, performance, test) talk to each other and take actions autonomously — filing issues, creating PRs, merging PRs, and closing issues, all automated.*
 14. [Key Takeaways](#14-key-takeaways)
+    - *Loop-Config-Commands-Hooks-Sessions-Teams*
 
 ---
 
@@ -311,6 +325,8 @@ Two-token scheme: short-lived signed JWT access token (claims: `sub`, `email`,
 with `{ userId, createdAt }`. Refresh tokens are revoked by deleting the map
 entry (`revokeToken`, logout).
 ```
+
+### Example: Generating `validateCreditCard` and Its Test Case from a Prompt
 
 > Note: creating a function like this automatically creates a test case also (via the write-tests skill — covered in section 7).
 
