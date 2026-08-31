@@ -1,0 +1,37 @@
+Just wrapped up a deep-dive training on Claude Code — sharing my key takeaways 👇
+
+Spent time this week going hands-on with Claude Code and the broader Claude ecosystem. Here's what stood out:
+
+1. It's an ecosystem, not just a CLI — Claude Code is one piece; Claude AI, Claude Design, Claude Co-work, Claude Security, and browser/office plugins all sit under the same umbrella.
+
+2. The agentic loop is the core engine — gather context → send to the LLM → decide + call tools → verify the task is actually done. It keeps looping until the job is complete, not just until a response is generated.
+
+3. Context engineering matters more than prompting — how well the agent reads your files, imports, and function definitions before acting directly drives output quality.
+
+4. Model choice is a real lever — Fable, Opus, Sonnet, and Haiku each fit different task complexity; /model and /effort (high → xhigh → max) let you tune cost vs. capability per task.
+
+5. You can run fully local too — via Ollama with open models like Qwen or Llama, for teams that need an offline/local-only setup.
+
+6. Session management is a superpower — /resume, /fork, /compact, /export let you pause, branch, and return to work without losing context, and running parallel sessions per bug keeps unrelated context from bleeding together.
+
+7. CLAUDE.md is the single source of truth — a project-level file documenting architecture, coding standards, and rules the agent must always follow — kept short (150–200 lines) and can exist per sub-folder too.
+
+8. Permissions are configurable and layered — settings.json (shared, checked into repo) vs settings.local.json (personal, overrides) let teams control exactly what Claude can read, write, or execute — with allow/ask/deny rules.
+
+9. Commands, Skills, and Agents are different tools for different jobs — slash commands run manually, Skills auto-trigger based on what you ask (no explicit invocation needed), and Agents run as background specialists with their own scoped toolset.
+
+10. Subagents make code review genuinely thorough — a single "review this" prompt can auto-delegate to dedicated security, performance, test-coverage, and code-quality analysts, each reporting independently before a synthesized report comes back.
+
+11. Hooks let you enforce guardrails programmatically — PreToolUse/Notification hooks intercept actions (like Bash commands) before they run, so you can block dangerous patterns or trigger Slack alerts automatically.
+
+12. MCP (Model Context Protocol) solves the integration problem — instead of Claude needing custom logic for every SaaS tool, MCP servers (stdio/HTTP/SSE) expose a standard interface any AI tool can connect to.
+
+13. Agent Teams enable real parallel work — spawning multiple reviewers (e.g., security, performance, test coverage) to work independently and synthesize into one output, closer to how a real team reviews a PR.
+
+14. Plan mode vs. Auto mode is a meaningful toggle — plan mode asks for approval before changes; auto mode lets Claude act independently — worth switching deliberately based on the risk of the task.
+
+15. End-to-end automation is the real endgame — issue creation → fix → PR → review → merge, all chainable through agents, hooks, and commands working together.
+
+Excited to keep applying this to real projects. 🚀
+
+#ClaudeCode #AI #DeveloperTools #Automation #SoftwareEngineering
