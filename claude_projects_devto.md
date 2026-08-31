@@ -47,6 +47,7 @@ Claude Code is one tool within a larger ecosystem, not a standalone product:
 
 In the backend, Claude Code talks to the LLM hosted by Anthropic via the `/v1/messages` API.
 
+*Diagram of the agentic loop: gather context, take action, verify results, repeat until done.*
 ![Claude ecosystem overview](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image1.png)
 
 > Tools like Cursor, Windsurf, and Perplexity act as **integrators** — giving access to multiple LLMs. Claude, by contrast, offers an entire vertically integrated ecosystem.
@@ -70,8 +71,10 @@ Additional properties:
 
 ### Agentic Coding Tools Architecture
 
+*Three-layer architecture diagram showing coding agents (Claude Code, Copilot, Codex, Cursor, etc.) between the chat interface and various LLM hosting backends.*
 ![Agentic coding tools architecture diagram 1](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image2.png)
 
+*Claude Code's runtime architecture, from terminal command through the CLI parser and QueryEngine agentic loop to tool calls and API routing.*
 ![Agentic coding tools architecture diagram 2](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image3.png)
 
 - Claude Code always connects to the Anthropic base URL.
@@ -97,6 +100,7 @@ Four main models, chosen based on the type of task and usage:
 
 **Guidance:** try a smaller model at higher effort first — otherwise switch to a new/bigger model as required. Use Fable only if Opus cannot handle the task.
 
+*Terminal status line showing the active model, session name, context usage, token count, and running cost.*
 ![Models and effort screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image4.png)
 
 *Screen clippings taken: 29-08-2026 02:21 and 29-08-2026 02:14*
@@ -135,6 +139,7 @@ Before starting with Claude Code, it's worth understanding `/sessions` — sessi
 8. There is a **usage limit at the account level**; every session uses a part of that limit.
 9. We should create multiple sessions — e.g. 3 different sessions for 3 different bugs. Information for the first bug may not be needed for the second bug, and sessions help Claude read old information without wasting tokens to recreate it.
 
+*Claude Code's /status panel showing version, session details, login/account info, and connected MCP servers.*
 ![Session export screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image5.png)
 
 ---
@@ -202,6 +207,7 @@ Permissions:
 }
 ```
 
+*Claude declining to read a blocked .env.example file per project settings and offering alternative ways to proceed.*
 ![Settings configuration screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image6.png)
 
 ### `/init`
@@ -308,8 +314,10 @@ entry (`revokeToken`, logout).
 
 > Note: creating a function like this automatically creates a test case also (via the write-tests skill — covered in section 7).
 
+*Claude adding a JSDoc-documented validateCreditCard function (Luhn checksum, 13-19 digits) to validators.js.*
 ![CLAUDE.md example screen clipping 1](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image7.png)
 
+*Claude adding Jest test cases for validateCreditCard covering valid Visa and Mastercard test numbers.*
 ![CLAUDE.md example screen clipping 2](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image8.png)
 
 ---
@@ -322,6 +330,7 @@ entry (`revokeToken`, logout).
 - **Always switch to manual mode before making changes** you want to review first.
 - In plan mode, Claude will ask you to go ahead with the changes first.
 
+*Claude's plan mode proposal for a new validateBirthDate validator, with scope and constraints confirmed before execution.*
 ![Plan mode screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image9.png)
 
 In auto mode, this behaviour changes — Claude proceeds independently.
@@ -364,6 +373,7 @@ Use specific names — file names, function names, issue numbers where visible.
 Be factual and brief. No filler. Write it as if reading it aloud in 30 seconds.
 ```
 
+*Output of the /standup command summarizing yesterday's commits, today's work, and current blockers.*
 ![Standup command screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image10.png)
 
 > If Claude Code is used to create code, it should also be used to create the commit.
@@ -376,8 +386,10 @@ Take help of Claude to create a prompt using the **RCTFCF** framework (Role, Con
 
 Also relevant: **chain of thought prompting**, and the observation that **LLMs understand prompting better in their own language** (i.e. structured, explicit formats they're trained to parse).
 
+*Claude implementing validateDateOfBirth in validators.js following the ISO-date, no-future, 120-year-limit convention.*
 ![Metaprompting screen clipping 1](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image11.png)
 
+*The /raise-pr command refusing to push directly to main and creating a feature branch instead.*
 ![Metaprompting screen clipping 2](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image12.png)
 
 ### Example: custom command — `/raise-pr`
@@ -422,18 +434,22 @@ Be precise and factual. Every word should earn its place.
 
 Running `/raise-pr`:
 
+*Permission prompt confirming the git push of the new feature branch to origin.*
 ![Raise PR screen clipping 1](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image13.png)
 
+*Confirmation that the feature branch was pushed and PR #1 was opened on GitHub.*
 ![Raise PR screen clipping 2](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image14.png)
 
 We can see the PR is created:
 
+*GitHub pull requests tab showing the newly opened validateDateOfBirth PR.*
 ![PR created screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image15.png)
 
 ### Skills are auto-invoked
 
 `/commands` are executed manually, but **skills** get applied automatically based on the prompt. Seeing a list of all skills:
 
+*The /skills menu listing all 9 available skills and their lock/enabled status.*
 ![List of all skills screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image16.png)
 
 Skills could also come from installed plugins.
@@ -466,14 +482,17 @@ Example prompt:
 
 The code review skill should auto-invoke:
 
+*Claude auto-invoking the code-review skill and launching four parallel review agents against the auth module.*
 ![Code review skill auto-invoked screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image17.png)
 
 No explicit integration is needed — it's auto-invoked. No need to use `/command` explicitly.
 
 A sample of the code review report:
 
+*Consolidated code review report table listing critical and high-severity findings across the auth module.*
 ![Code review report sample screen clipping 1](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image18.png)
 
+*Detailed write-up of two critical findings: a syntax-breaking stray await and a bypassed bcrypt password check.*
 ![Code review report sample screen clipping 2](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image19.png)
 
 ### Example: skill — `deploy`
@@ -535,10 +554,12 @@ Node.js application.
 
 Initiating the write-tests skill:
 
+*The write-tests skill identifying and filling a missing leap-year test case for validateDateOfBirth.*
 ![Write tests skill screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image20.png)
 
 Skills are auto-invoked. LCOV coverage output:
 
+*Test suite results showing 76 passing tests with 100% coverage on validators.js.*
 ![LCOV coverage screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image21.png)
 
 ### Creating a custom agent
@@ -550,6 +571,7 @@ Skills, agents, and commands differ as follows:
 
 Example of agents:
 
+*The project's custom subagent definitions listed in the .claude/agents folder.*
 ![Example of agents screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image22.png)
 
 ### Example: custom agent — `security-analyst`
@@ -608,6 +630,7 @@ End with: total finding count by severity, and one recommended immediate action.
 
 How does a skill hand over a task to an agent?
 
+*Claude launching the security-analyst subagent in the background to audit the authentication codebase.*
 ![Skill handover to agent screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image23.png)
 
 ### The agent runs in the background
@@ -647,6 +670,7 @@ When Claude Code itself uses multiple subagents to work on a task, we can say it
 
 Prompt: *"Create agent for performance review, test coverage, and code quality — use the code review skill."*
 
+*Claude clarifying review scope, then running performance, test-coverage, and code-quality agents in parallel while fixing the critical bugs.*
 ![Performance/test-coverage/code-quality review screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image24.png)
 
 **Full output — Code Review Report (Performance / Test Coverage / Code Quality)**
@@ -684,6 +708,7 @@ Prompt: *"Create agent for performance review, test coverage, and code quality �
 
 ### Difference between agent and agentic
 
+*Comparison diagram contrasting framework-driven "Agent" orchestration with model-native "Agentic" execution.*
 ![Agent vs agentic diagram screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image25.png)
 
 - **Goal**, **loop**, **schedule**, **workflow**, **batch** — agentic primitives available which help create subtasks (e.g. ultraplan, autofix-pr).
@@ -757,9 +782,9 @@ Since this hook sits directly in front of every Bash call, it's a good intercept
 }
 ```
 
+*The bash-guard hook's log file recording every Bash command it allowed during the session.*
 ![Hook handler types screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image26.png)
 
-*Screen clipping taken: 29-08-2026 19:34*
 
 ### Blocking dangerous commands
 
@@ -805,15 +830,15 @@ What if I want to use all my settings in the `.claude` folder in another project
 
 The GitHub REST API knows how to connect to GitHub on your behalf.
 
+*Diagram showing Git Bash and the GH CLI both reaching GitHub's SaaS platform through the GitHub REST API.*
 ![GitHub REST API screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image27.png)
 
-*Screen clipping taken: 29-08-2026 20:26*
 
 Either Claude directly connects via Bash, or via the `gh` CLI — both of which need to be authenticated. Actually, the `gh` CLI is itself using Bash commands under the hood. But can Claude Code directly connect to the GitHub REST API to be faster and more efficient? `curl` can be used for that:
 
+*Expanded diagram showing how Claude Code uses its Bash tool (via curl, git, or gh CLI) to reach the GitHub REST API.*
 ![Curl-based GH REST API connection screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image28.png)
 
-*Screen clipping taken: 29-08-2026 20:30*
 
 ### Why MCP exists
 
@@ -841,37 +866,40 @@ All AI tools support MCP servers. The MCP client is part of the ecosystem.
 
 End-to-end automation of security review → issue creation → issue fix → PR creation → PR fix, all through agents.
 
+*The /security-review command loading its skill to audit tokenHelper.js.*
 ![End-to-end automation intro screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image29.png)
 
+*Security review finding a critical hardcoded fallback JWT signing secret vulnerability in tokenHelper.js.*
 ![Automation flow screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image30.png)
 
-*Screen clipping taken: 29-08-2026 21:02*
 
 ### `/create-issue`
 
+*Claude using the gh CLI to file a GitHub issue for the hardcoded JWT secret vulnerability.*
 ![Create issue screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image31.png)
 
+*GitHub issue #2 detailing the hardcoded fallback JWT secret bug, its impact, and expected fix.*
 ![Create issue result screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image32.png)
 
-*Screen clipping taken: 29-08-2026 21:05*
 
 ### Now fix the issue
 
+*Claude implementing the fix: removing the hardcoded JWT secret fallback and requiring the env var explicitly.*
 ![Fix the issue screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image33.png)
 
-*Screen clipping taken: 29-08-2026 21:09*
 
 ### Commit the changes
 
+*The /commit command staging, reviewing, and pushing the JWT secret fix with a detailed commit message.*
 ![Commit changes screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image34.png)
 
+*GitHub activity showing the fix commit automatically linked to close issue #2.*
 ![Commit result screen clipping 1](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image35.png)
 
-*Screen clipping taken: 29-08-2026 21:16*
 
+*Pull request description summarizing what changed and why for the JWT secret fix.*
 ![Commit result screen clipping 2](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image36.png)
 
-*Screen clipping taken: 29-08-2026 21:19*
 
 ---
 
@@ -891,31 +919,31 @@ Beyond single subagent delegation, Claude Code supports **Agent Teams** — mult
 > Create a new branch with custom name including today's date.
 > Merge and close the PR with comment.
 
+*User prompt instructing Claude to spawn three specialized reviewer agents to review and merge PR #1.*
 ![Agent teams prompt screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image37.png)
 
-*Screen clipping taken: 29-08-2026 21:25*
 
 The 3 agents are invoked in the background:
 
+*Claude launching three specialized reviewer agents in parallel to review PR #1.*
 ![Agents invoked in background screen clipping](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image38.png)
 
-*Screen clipping taken: 29-08-2026 21:26*
 
+*Progress log showing the security and test-coverage reviewer agents finishing with real findings.*
 ![Agent team progress screen clipping 1](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image39.png)
 
-*Screen clipping taken: 29-08-2026 21:38*
 
+*Claude synthesizing all three reviewer agents' findings before applying fixes and merging.*
 ![Agent team progress screen clipping 2](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image40.png)
 
-*Screen clipping taken: 29-08-2026 21:39*
 
+*Claude merging the verified fix, filing two follow-up issues, and preparing to post the review synthesis as a PR comment.*
 ![Agent team result screen clipping 1](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image41.png)
 
-*Screen clipping taken: 29-08-2026 21:39*
 
+*Final summary of the agent-team review: verdicts from all three reviewers and the actions taken to merge PR #1.*
 ![Agent team result screen clipping 2](https://raw.githubusercontent.com/yash-nigam/claude_code_demo/main/images/claude-training/image42.png)
 
-*Screen clipping taken: 29-08-2026 21:44*
 
 ---
 
